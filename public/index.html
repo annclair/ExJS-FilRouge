@@ -9,12 +9,136 @@
 
 <body>
 
+<h1> {{'menan'.toUpperCase()}} coucou </h1>
+
+<table ng-controller="usersController as $ctrl">
+
+    <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Age</th>
+        <th>Adresse</th>
+    </tr>
+
+    <tr>
+        <td></td>
+        <td><input type="text" name="name" ng-model="$ctrl.selectedUser.name"></td>
+        <td><input type="text" name="age" ng-model="$ctrl.selectedUser.age"></td>
+        <td>
+          <input type="text" name="address" ng-model="$ctrl.selectedUser.address">
+        </td>
+        <td>
+          <button type="button" name="button" ng-click="$ctrl.add()"> Ajouter </button>
+        </td>
+
+    </tr>
+
+    <tr ng-repeat="user in $ctrl.users">
+        <td>{{$index}}</td>
+        <td>
+          <span ng-if="!user.editMode">{{user.name}}</span>
+          <input ng-if="user.editMode" type="text" name="name" ng-model="user.name">
+      </td>
+        <td>
+          <span ng-if="!user.editMode">{{user.age}}</span>
+          <input ng-if="user.editMode" type="text" name="age" ng-model="user.age">
+        </td>
+        <td>
+          <span ng-if="!user.editMode">{{user.address}}</span>
+          <input ng-if="user.editMode" type="text" name="address" ng-model="user.address">
+        </td>
+        <td>
+          <button type="button" name="button" ng-click="$ctrl.delete(user, $index)"> Supprimer </button>
+          <button type="button" name="button" ng-click="$ctrl.edit(user)">{{ (user.editMode ? 'Valider' : 'Modifier')}} </button>
+          <button type="button" name="button" ng-if="user.editMode" ng-click="$ctrl.cancel(user, $index)"> Annuler </button>
+        </td>
+    </tr>
+
+</table>
+
+
+
 </body>
 
 <script src="libs/angular.min.js"></script>
 
 <script>
     let app = angular.module('app', [])
+
+    app.controller('usersController', function($http){
+
+      // angular.extend(this,{
+      //   add(){
+      //
+      //   }
+      // })
+
+      let _previous = {}
+
+      // on récupere les utilisateurs
+
+      $http.get('/users').then((response)=>{
+          this.users = response.data
+      })
+
+      // on ajoute des utilisateurs
+
+      this.add = () => {
+          $http.post('/users', this.selectedUser).then((res)=> {
+              // debugger
+              this.selectedUser = {}
+              this.users.push(res.data)
+          })
+      }
+
+      // on supprime les utilisateurs
+
+      this.delete = (user, index) => {
+          $http.delete('/users/' + user._id).then((res) => {
+              //debugger
+              this.users.splice(index, 1)
+          })
+      }
+
+      // on modifie les utilisateurs
+
+      this.edit = (user) => {
+          if (user.editMode){
+              // http
+              $http.put('/users/' + user._id, user).then((res)=> {
+                user.editMode = false
+              })
+          }else {
+              _previous[user._id] = angular.copy(user) // on fait une copie du user dans un objet previous et avec comme valeur tout l'bjet
+              user.editMode = true
+          }
+      }
+
+      // on annule une modification en cours
+
+      this.cancel = (user, index) => {
+          this.users[index] = _previous[user._id]
+      }
+
+      // this.add = () => {
+      //   alert(JSON.stringify(this.selectedUser))
+      // }
+
+      //test pour voir si affichage d'un pemier résultat
+
+      // this.users = [{
+      //   _id:"12",
+      //   name:"Name",
+      //   age : 99,
+      //   address : "AZER"
+      // }]
+
+      //this.users = []
+
+
+
+    })
+
 </script>
 
 </html>
