@@ -51,8 +51,7 @@ let userModel = mongoose.model('User', new mongoose.Schema({  // on crée un nou
         default: 99
     },
     address: {
-        type: String,
-        default: ' '
+        type: String
     }
 }, {
     timestamps: true
@@ -61,8 +60,12 @@ let userModel = mongoose.model('User', new mongoose.Schema({  // on crée un nou
 
 // Création des différentes "routes" (API) que le serveur met à disposition
 app.get('/users', (req, res, next) => {
-    // Récupération de tous les users
-    userModel.find({}).exec((err, users) => { // sur Rbo mongo, on voit les requetes en haut avec le user Model
+  // let filter = {}
+  //   if(req.query.city){
+  //     filter.address = req.query.city
+  //   }
+    // Récupération de tous les users en fonctions des queries string
+    userModel.find(req.query).exec((err, users) => { // sur Rbo mongo, on voit les requetes en haut avec le user Model
         res.json(users)   // mettre une reponse pour que le server ne tourne pas dans le vide
     })
 })
